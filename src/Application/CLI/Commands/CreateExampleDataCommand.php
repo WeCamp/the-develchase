@@ -40,7 +40,11 @@ final class CreateExampleDataCommand extends AbstractCommand
                 'Elma Fudd'
             ],
             'topic' => [],
-            'conference' => []
+            'conference' => [
+                'PHP North West',
+                'PHP South Coast',
+                'PHP Yorkshire'
+            ]
         ];
     }
 
@@ -53,11 +57,13 @@ final class CreateExampleDataCommand extends AbstractCommand
 	{
 		$style = new SymfonyStyle( $input, $output );
 
-		$style->title( 'Adding test data...' );
+		$style->title( 'Adding test data.' );
 
 		foreach($this->testdata as $collectionName => $collectionDocuments) {
             try {
                 // Create a new collection
+                $style->section('Creating collection ' . $collectionName);
+
                 $collection = new Collection($collectionName);
                 $collectionHandler = new CollectionHandler($this->connection);
 
@@ -70,6 +76,8 @@ final class CreateExampleDataCommand extends AbstractCommand
                 $documentHandler = new DocumentHandler($this->connection);
 
                 foreach($collectionDocuments as $documentName) {
+                    $style->writeln('Creating document ' . $documentName);
+
                     $document = new Document();
                     $document->set("name", $documentName);
                     $documentHandler->save($collectionId, $document);
