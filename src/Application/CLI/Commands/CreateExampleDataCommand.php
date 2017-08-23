@@ -59,13 +59,14 @@ final class CreateExampleDataCommand extends AbstractCommand
 
 		$style->title( 'Adding test data.' );
 
+        $collectionHandler = new CollectionHandler($this->connection);
+
 		foreach($this->testdata as $collectionName => $collectionDocuments) {
             try {
                 // Create a new collection
                 $style->section('Creating collection ' . $collectionName);
 
                 $collection = new Collection($collectionName);
-                $collectionHandler = new CollectionHandler($this->connection);
 
                 // Drops an existing collection with the same name
                 if ($collectionHandler->has($collection)) {
@@ -80,6 +81,7 @@ final class CreateExampleDataCommand extends AbstractCommand
 
                     $document = new Document();
                     $document->set("name", $documentName);
+
                     $documentHandler->save($collectionId, $document);
                 }
             } catch (\Throwable $e) {
