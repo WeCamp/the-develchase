@@ -25,3 +25,11 @@ Based on a graph database our app should be able to answer the following questio
 * SQL / AQL comparison: https://www.arangodb.com/why-arangodb/sql-aql-comparison/
 
 * 
+
+## Usage
+
+### Create example data
+
+```bash
+php bin/cli.php create:example-data
+```

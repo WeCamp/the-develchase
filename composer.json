@@ -1,10 +1,17 @@
 {
     "name": "we-camp/the-devel-chase",
     "description": "ArangoDB Experiment",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
     "type": "project",
     "require": {
       "php": ">= 7.1",
-        "triagens/arangodb": "^3.1"
+      "triagens/arangodb": "^3.1",
+      "symfony/console": "^3.0"
     },
-    "minimum-stability": "dev"
+  "autoload": {
+    "psr-4": {
+      "WeCamp\\TheDevelChase\\": "src/"
+    }
+  }
 }
