@@ -3,6 +3,7 @@
     "description": "ArangoDB Experiment",
     "type": "project",
     "require": {
+      "php": ">= 7.1",
         "triagens/arangodb": "^3.1"
     },
     "minimum-stability": "dev"
