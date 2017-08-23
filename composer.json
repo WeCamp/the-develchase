@@ -1,0 +1,9 @@
+{
+    "name": "we-camp/the-devel-chase",
+    "description": "ArangoDB Experiment",
+    "type": "project",
+    "require": {
+        "triagens/arangodb": "^3.1"
+    },
+    "minimum-stability": "dev"
+}
