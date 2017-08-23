@@ -1,0 +1,33 @@
+version: '2'
+
+services:
+  nginx-proxy:
+    container_name: proxy
+    image: jwilder/nginx-proxy
+    ports:
+      - "8000:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+
+  arangodb:
+    container_name: arangodb
+    image: arangodb/arangodb:3.2.1
+    restart: on-failure:10
+    environment:
+      ARANGO_ROOT_PASSWORD: "openSesame"
+    ports: [ "8529:8529" ]
+
+  web:
+    container_name: nginx
+    image: nginx
+    volumes:
+      - ./vendor:/opt/webapp/vendor
+      - ./src/resources/public:/usr/share/nginx/html
+    ports:
+      - "8080:80"
+    restart: on-failure:10
+    environment:
+      - VIRTUAL_HOST=thedevelchase.com
+    links:
+      - arangodb
+
