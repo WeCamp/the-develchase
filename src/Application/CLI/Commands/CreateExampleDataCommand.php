@@ -5,13 +5,12 @@
 
 namespace WeCamp\TheDevelChase\Application\CLI\Commands;
 
-use triagens\ArangoDb\Collection as Collection;
-use triagens\ArangoDb\CollectionHandler as CollectionHandler;
-use triagens\ArangoDb\DocumentHandler as DocumentHandler;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use triagens\ArangoDb\Document;
+use triagens\ArangoDb\Collection as Collection;
+use triagens\ArangoDb\CollectionHandler as CollectionHandler;
+use triagens\ArangoDb\Statement;
 use WeCamp\TheDevelChase\Env;
 
 /**
@@ -20,35 +19,81 @@ use WeCamp\TheDevelChase\Env;
  */
 final class CreateExampleDataCommand extends AbstractCommand
 {
-    var $connection;
+	private $connection;
 
-    var $testdata;
+	private $testdata;
 
-    public function __construct($name, Env $env)
-    {
-        parent::__construct($name, $env);
+	public function __construct( $name, Env $env )
+	{
+		parent::__construct( $name, $env );
 
-        $this->connection = $env->getArangoConnection();
+		$this->connection = $env->getArangoConnection();
 
-        // Example data structure
-        $this->testdata = [
-            'user' => [
-                'Tom',
-                'Jerry',
-                'Daffy Duck',
-                'Bugs Bunny',
-                'Elma Fudd'
-            ],
-            'topic' => [],
-            'conference' => [
-                'PHP North West',
-                'PHP South Coast',
-                'PHP Yorkshire'
-            ]
-        ];
-    }
+		// Example data structure
+		$this->testdata = [
+			'users'       => [
+				[
+					'firstname' => 'Tom',
+					'lastname'  => 'Riddle',
+					'topics'    => [
+						'PHP', 'Docker',
+					],
+				],
+				[
+					'firstname' => 'Mary',
+					'lastname'  => 'Poppins',
+					'topics'    => [
+						'JavaScript', 'Vagrant',
+					],
+				],
+				[
+					'firstname' => 'Jennis',
+					'lastname'  => 'Joplin',
+					'topics'    => [
+						'PHP', 'Vagrant',
+					],
+				],
+				[
+					'firstname' => 'Elvis',
+					'lastname'  => 'Presley',
+					'topics'    => [
+						'JavaScript', 'Docker', 'PHP',
+					],
+				],
 
-    protected function configure() : void
+			],
+			'topics'      => [
+				[
+					'name' => 'PHP',
+				],
+				[
+					'name' => 'JavaScript',
+				],
+				[
+					'name' => 'Docker',
+				],
+				[
+					'name' => 'Vagrant',
+				],
+			],
+			'conferences' => [
+				[
+					'name'     => 'PHP North West',
+					'location' => 'Northwest, UK',
+				],
+				[
+					'name'     => 'PHP South Coast',
+					'location' => 'South Coast, USA',
+				],
+				[
+					'name'     => 'PHP Yorkshire',
+					'location' => 'Yorkshire, UK',
+				],
+			],
+		];
+	}
+
+	protected function configure() : void
 	{
 		$this->setDescription( 'Fills example data to the graph database.' );
 	}
@@ -59,37 +104,68 @@ final class CreateExampleDataCommand extends AbstractCommand
 
 		$style->title( 'Adding test data.' );
 
-        $collectionHandler = new CollectionHandler($this->connection);
+		$collectionHandler = new CollectionHandler( $this->connection );
 
-		foreach($this->testdata as $collectionName => $collectionDocuments) {
-            try {
-                // Create a new collection
-                $style->section('Creating collection ' . $collectionName);
+		try
+		{
+			$collectionName = 'users';
 
-                $collection = new Collection($collectionName);
+			// Create a new collection
+			$style->section( 'Creating collection ' . $collectionName );
 
-                // Drops an existing collection with the same name
-                if ($collectionHandler->has($collection)) {
-                    $collectionHandler->drop($collection);
-                }
+			$collection = new Collection( $collectionName );
 
-                $collectionId = $collectionHandler->create($collection);
-                $documentHandler = new DocumentHandler($this->connection);
+			// Drops an existing collection with the same name
+			if ( $collectionHandler->has( $collection ) )
+			{
+				$collectionHandler->drop( $collection );
+			}
 
-                foreach($collectionDocuments as $documentName) {
-                    $style->writeln('Creating document ' . $documentName);
+			$collectionId = $collectionHandler->create( $collection );
 
-                    $document = new Document();
-                    $document->set("name", $documentName);
+			$style->writeln( 'Created collection ' . $collection . ' with ID: ' . $collectionId );
 
-                    $documentHandler->save($collectionId, $document);
-                }
-            } catch (\Throwable $e) {
-                $style->error($e->getMessage());
+			// Insert users
+			$users = $this->testdata['users'];
 
-                return 1;
-            }
-        }
+			$query = "INSERT @user INTO users RETURN NEW";
+
+			$userDocuments = [];
+
+			foreach ( $users as $user )
+			{
+				$statement = new Statement(
+					$this->getEnv()->getArangoConnection(),
+					[
+						'query'     => $query,
+						'count'     => true,
+						'batchSize' => 1,
+						'sanatize'  => true,
+						'bindVars'  => [
+							'user'         => [
+								'firstname' => $user['firstname'],
+								'lastname'  => $user['lastname'],
+							],
+						],
+					]
+				);
+
+				$cursor = $statement->execute();
+
+				foreach ( $cursor as $key => $document )
+				{
+					$userDocuments[ $key ] = $document;
+				}
+			}
+
+			print_r( $userDocuments );
+		}
+		catch ( \Throwable $e )
+		{
+			$style->error( $e->getMessage() );
+
+			return 1;
+		}
 
 		$style->success( 'Data successfully added.' );
 
