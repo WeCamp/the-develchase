@@ -29,9 +29,10 @@ final class CollectionRepository
 		$this->collectionHandler = new CollectionHandler( $connection );
 	}
 
-	public function create( string $name ) : string
+	public function create( string $name, array $options ) : string
 	{
 		$collection = new Collection( $name );
+		$collection->setType($options['type']);
 
 		// Drops an existing collection with the same name
 		if ( $this->collectionHandler->has( $collection ) )

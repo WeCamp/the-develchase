@@ -4,7 +4,7 @@ namespace WeCamp\TheDevelChase\Application\Documents;
 
 use WeCamp\TheDevelChase\Application\Interfaces\DocumentInterface;
 
-final class User implements DocumentInterface
+final class User extends AbstractDocument implements DocumentInterface
 {
 	/** @var string */
 	private $firstName;
@@ -77,11 +77,38 @@ final class User implements DocumentInterface
 			'_key'      => $this->getKey(),
 			'firstName' => $this->firstName,
 			'lastName'  => $this->lastName,
+            'label' => $this->firstName . ' ' . $this->lastName
 		];
 	}
 
 	public function getKey() : string
 	{
-		return md5( $this->firstName . ':' . $this->lastName );
+		return  $this->sanitizeString($this->firstName . ' ' . $this->lastName);
 	}
+
+	public function getEdges(): array
+    {
+        $edges = [];
+        foreach($this->getConferences() as $conference) {
+            $edges[] = Edge::fromArray(
+                [
+                    'label' => 'attending',
+                    '_from' => 'users/' . $this->getKey(),
+                    '_to' => 'conferences/' . $conference->getKey()
+                ]
+            );
+        }
+
+        foreach($this->getTopics() as $topic) {
+            $edges[] = Edge::fromArray(
+                [
+                    'label' => 'interested',
+                    '_from' => 'users/' . $this->getKey(),
+                    '_to' => 'topics/' . $topic->getKey()
+                ]
+            );
+        }
+
+        return $edges;
+    }
 }

@@ -4,7 +4,7 @@ namespace WeCamp\TheDevelChase\Application\Documents;
 
 use WeCamp\TheDevelChase\Application\Interfaces\DocumentInterface;
 
-final class Topic implements DocumentInterface
+final class Topic extends AbstractDocument implements DocumentInterface
 {
 	/** @var string */
 	private $name;
@@ -29,11 +29,12 @@ final class Topic implements DocumentInterface
 		return [
 			'_key' => $this->getKey(),
 			'name' => $this->name,
+            'label' => $this->name
 		];
 	}
 
 	public function getKey() : string
 	{
-		return md5( $this->name );
+		return $this->sanitizeString($this->name);
 	}
 }

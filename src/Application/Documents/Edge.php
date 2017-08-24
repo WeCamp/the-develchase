@@ -4,7 +4,7 @@ namespace WeCamp\TheDevelChase\Application\Documents;
 
 use WeCamp\TheDevelChase\Application\Interfaces\DocumentInterface;
 
-final class Edge implements DocumentInterface
+final class Edge extends AbstractDocument implements DocumentInterface
 {
 	/** @var string */
 	private $label;
@@ -46,6 +46,6 @@ final class Edge implements DocumentInterface
 
 	public function getKey() : string
 	{
-		return md5( $this->label . ':' . $this->_from . ':' . $this->_to );
+		return $this->sanitizeString( $this->label . ':' . $this->_from . ':' . $this->_to );
 	}
 }
