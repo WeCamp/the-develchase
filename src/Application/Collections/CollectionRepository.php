@@ -34,13 +34,14 @@ final class CollectionRepository
 		$collection = new Collection( $name );
 		$collection->setType($options['type']);
 
+
 		// Drops an existing collection with the same name
-		if ( $this->collectionHandler->has( $collection ) )
+		if ( !$this->collectionHandler->has( $collection ) )
 		{
-			$this->collectionHandler->drop( $collection );
+            return $this->collectionHandler->create( $collection );
 		}
 
-		return $this->collectionHandler->create( $collection );
+		return $this->collectionHandler->getCollectionId($collection->getName());
 	}
 
 	public function insertDocuments( string $collectionName, DocumentInterface ...$documents ) : void
