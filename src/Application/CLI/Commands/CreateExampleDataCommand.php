@@ -11,6 +11,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use triagens\ArangoDb\Collection as Collection;
 use triagens\ArangoDb\CollectionHandler as CollectionHandler;
 use triagens\ArangoDb\Statement;
+use WeCamp\TheDevelChase\Application\Documents\Conference;
+use WeCamp\TheDevelChase\Application\Documents\Topic;
+use WeCamp\TheDevelChase\Application\Documents\User;
+use WeCamp\TheDevelChase\Application\Interfaces\DocumentInterface;
 use WeCamp\TheDevelChase\Env;
 
 /**
@@ -33,29 +37,29 @@ final class CreateExampleDataCommand extends AbstractCommand
 		$this->testdata = [
 			'users'       => [
 				[
-					'firstname' => 'Tom',
-					'lastname'  => 'Riddle',
+					'firstName' => 'Tom',
+					'lastName'  => 'Riddle',
 					'topics'    => [
 						'PHP', 'Docker',
 					],
 				],
 				[
-					'firstname' => 'Mary',
-					'lastname'  => 'Poppins',
+					'firstName' => 'Mary',
+					'lastName'  => 'Poppins',
 					'topics'    => [
 						'JavaScript', 'Vagrant',
 					],
 				],
 				[
-					'firstname' => 'Jennis',
-					'lastname'  => 'Joplin',
+					'firstName' => 'Jennis',
+					'lastName'  => 'Joplin',
 					'topics'    => [
 						'PHP', 'Vagrant',
 					],
 				],
 				[
-					'firstname' => 'Elvis',
-					'lastname'  => 'Presley',
+					'firstName' => 'Elvis',
+					'lastName'  => 'Presley',
 					'topics'    => [
 						'JavaScript', 'Docker', 'PHP',
 					],
@@ -106,67 +110,72 @@ final class CreateExampleDataCommand extends AbstractCommand
 
 		$collectionHandler = new CollectionHandler( $this->connection );
 
-		try
-		{
-			$collectionName = 'users';
+		foreach($this->testdata as $collectionName => $documents) {
+		    switch($collectionName) {
+                case 'users':
+                    $documentClassName = User::class;
+                    break;
+                case 'topics':
+                    $documentClassName = Topic::class;
+                    break;
+                case 'conferences':
+                    $documentClassName = Conference::class;
+                    break;
+                default:
+                    throw new \Exception('Unknown collection name');
+            }
 
-			// Create a new collection
-			$style->section( 'Creating collection ' . $collectionName );
+            // Create a new collection
+            $style->section( 'Creating collection ' . $collectionName );
 
-			$collection = new Collection( $collectionName );
+            $collection = new Collection( $collectionName );
 
-			// Drops an existing collection with the same name
-			if ( $collectionHandler->has( $collection ) )
-			{
-				$collectionHandler->drop( $collection );
-			}
+            // Drops an existing collection with the same name
+            if ( $collectionHandler->has( $collection ) )
+            {
+                $collectionHandler->drop( $collection );
+            }
 
-			$collectionId = $collectionHandler->create( $collection );
+            $collectionId = $collectionHandler->create( $collection );
 
-			$style->writeln( 'Created collection ' . $collection . ' with ID: ' . $collectionId );
+            $style->writeln( 'Created collection ' . $collection . ' with ID: ' . $collectionId );
 
-			// Insert users
-			$users = $this->testdata['users'];
+            $query = "INSERT @document INTO @@collectionName RETURN NEW";
 
-			$query = "INSERT @user INTO users RETURN NEW";
 
-			$userDocuments = [];
+            foreach($documents as $data) {
+		        /** @var DocumentInterface $documentClassName */
+		        $document = $documentClassName::fromArray($data);
 
-			foreach ( $users as $user )
-			{
-				$statement = new Statement(
-					$this->getEnv()->getArangoConnection(),
-					[
-						'query'     => $query,
-						'count'     => true,
-						'batchSize' => 1,
-						'sanatize'  => true,
-						'bindVars'  => [
-							'user'         => [
-								'firstname' => $user['firstname'],
-								'lastname'  => $user['lastname'],
-							],
-						],
-					]
-				);
+                $statement = new Statement(
+                    $this->getEnv()->getArangoConnection(),
+                    [
+                        'query'     => $query,
+                        'count'     => true,
+                        'batchSize' => 1,
+                        'sanatize'  => true,
+                        'bindVars'  => [
+                            'document' => $document->toArray(),
+                            '@collectionName' => $collectionName
+                        ],
+                    ]
+                );
 
-				$cursor = $statement->execute();
-
-				foreach ( $cursor as $key => $document )
-				{
-					$userDocuments[ $key ] = $document;
-				}
-			}
-
-			print_r( $userDocuments );
-		}
-		catch ( \Throwable $e )
-		{
-			$style->error( $e->getMessage() );
-
-			return 1;
-		}
-
+                $statement->execute();
+            }
+        }
+//
+//		try
+//		{
+//
+//		}
+//		catch ( \Throwable $e )
+//		{
+//			$style->error( $e->getMessage() );
+//
+//			return 1;
+//		}
+//
 		$style->success( 'Data successfully added.' );
 
 		return 0;
