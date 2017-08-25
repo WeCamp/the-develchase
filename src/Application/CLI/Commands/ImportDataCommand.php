@@ -18,132 +18,158 @@ use WeCamp\TheDevelChase\Application\Documents\User;
  */
 final class ImportDataCommand extends AbstractCommand
 {
-    /** @var SymfonyStyle */
-    private $style;
+	/** @var SymfonyStyle */
+	private $style;
 
 	protected function configure() : void
 	{
 		$this->setDescription( 'Imports data into the graph database.' );
-		$this->addArgument( 'directory', InputArgument::REQUIRED, 'Data sheet file' );
+		$this->addArgument(
+			'directory',
+			InputArgument::OPTIONAL,
+			'Data sheet file',
+			__DIR__ . '/../../../../data'
+		);
 	}
 
 	protected function execute( InputInterface $input, OutputInterface $output ) : int
 	{
-		$this->style    = new SymfonyStyle( $input, $output );
-		$folder  = (string)$input->getArgument( 'directory' );
+		$this->style   = new SymfonyStyle( $input, $output );
+		$baseDirectory = (string)$input->getArgument( 'directory' );
 
-		if ( $folder[0] !== DIRECTORY_SEPARATOR )
+		if ( $baseDirectory[0] !== DIRECTORY_SEPARATOR )
 		{
-			$folder = dirname( __DIR__, 4 ) . DIRECTORY_SEPARATOR . $folder;
+			$baseDirectory = dirname( __DIR__, 4 ) . DIRECTORY_SEPARATOR . $baseDirectory;
 		}
 
-		if ( !file_exists( $folder ) )
+		if ( !file_exists( $baseDirectory ) )
 		{
-			$this->style->error( 'Folder does not exist: ' . $folder );
+			$this->style->error( 'Folder does not exist: ' . $baseDirectory );
 
 			return 1;
 		}
 
-        $collectionRepository = new CollectionRepository( $this->getEnv()->getArangoConnection() );
-        $collections = [
-            [
-                'name' => 'users',
-                'options' => ['type' => 2]
-            ],
-            [
-                'name' => 'topics',
-                'options' => ['type' => 2]
-            ],
-            [
-                'name' => 'conferences',
-                'options' => ['type' => 2]
-            ],
-            [
-                'name' => 'edges',
-                'options' => ['type' => 3]
-            ],
-        ];
+		$collectionRepository = new CollectionRepository( $this->getEnv()->getArangoConnection() );
 
-        $this->createCollections( $collectionRepository, $collections );
+		$this->createDocumentCollections( $collectionRepository, 'users', 'topics', 'conferences' );
+		$this->createEdgeCollections( $collectionRepository, 'edges' );
 
-        $fullFilePath = $folder . DIRECTORY_SEPARATOR . 'personal.csv';
+		$directory = new \DirectoryIterator( $baseDirectory );
 
-        $this->style->section( 'Start importing file: ' . $fullFilePath );
+		foreach ( $directory as $item )
+		{
+			if ( $item->isDot() || !$item->isDir() )
+			{
+				continue;
+			}
 
-        try
-        {
-            $file = fopen($fullFilePath, 'rb');
-            $headerRow= fgetcsv($file, 1024, ',', '"');
-            $dataRow= fgetcsv($file, 1024, ',', '"');
+			$this->importDataFromFolder( $collectionRepository, $item->getRealPath() );
+		}
 
-            $personal = array_combine($headerRow, $dataRow);
+		$this->style->success( 'Data imported successfully.' );
 
-            $userData = 		[
-                'firstName'   => $personal['FirstName'],
-                'lastName'    => ($personal['Infix'] ? "{$personal['Infix']} " : '') . $personal['LastName'],
-                'topics'      => array_map(
-                    function($string) {
-                        return strtolower(trim($string));
-                    }, explode(
-                    ',',
-                        $personal['tech topic interested comma separated']
-                    )
-                ),
-                'conferences' => [],
-            ];
-
-            fclose($file);
-
-            $fullFilePath = $folder . DIRECTORY_SEPARATOR . 'past.csv';
-
-            $this->style->section( 'Start importing file: ' . $fullFilePath );
-
-            $file = fopen($fullFilePath, 'rb');
-            $conferences = [];
-            $index = 0;
-
-            while($row = fgetcsv($file, 1024, ',', '"')) {
-                if (0 === $index++)
-                    continue;
-
-                $conferences[] = strtolower(trim($row[0]));
-            }
-
-            $userData['conferences'] = $conferences;
-
-            /** @var User $user */
-            $user = User::fromArray( $userData );
-
-            $collectionRepository->insertDocuments( 'users', $user );
-            $collectionRepository->insertDocuments( 'topics', ...$user->getTopics() );
-            $collectionRepository->insertDocuments( 'conferences', ...$user->getConferences() );
-            $collectionRepository->insertDocuments( 'edges', ...$user->getEdges() );
-
-            $this->style->success( '√ Data successfully added.' );
-        }
-        catch ( \Throwable $e )
-        {
-            $this->style->error( $e->getMessage() );
-
-            return 1;
-        }
-
-        $this->style->success( 'Data imported successfully.' );
-
-        return 0;
-
-
+		return 0;
 	}
 
-    private function createCollections( CollectionRepository $collectionRepository, array $collections ) : void
-    {
-        foreach ( $collections as $collection )
-        {
-            $this->style->section( 'Creating collection ' . $collection['name'] );
+	private function createDocumentCollections(
+		CollectionRepository $collectionRepository,
+		string ...$collectionNames
+	) : void
+	{
+		foreach ( $collectionNames as $collectionName )
+		{
+			$this->style->section( 'Creating document collection ' . $collectionName );
 
-            $collectionId = $collectionRepository->create( $collection['name'], $collection['options'] );
+			$collectionId = $collectionRepository->createDocumentCollection( $collectionName );
 
-            $this->style->writeln( '<fg=green>√ CollectionRepository-ID: ' . $collectionId . '</>' );
-        }
-    }
+			$this->style->writeln( '<fg=green>√ Collection-ID: ' . $collectionId . '</>' );
+		}
+	}
+
+	private function createEdgeCollections(
+		CollectionRepository $collectionRepository,
+		string ...$collectionNames
+	) : void
+	{
+		foreach ( $collectionNames as $collectionName )
+		{
+			$this->style->section( 'Creating edge collection ' . $collectionName );
+
+			$collectionId = $collectionRepository->createEdgeCollection( $collectionName );
+
+			$this->style->writeln( '<fg=green>√ Collection-ID: ' . $collectionId . '</>' );
+		}
+	}
+
+	private function commaSeparatedListToArray( string $listString ) : array
+	{
+		return array_map(
+			function ( $string )
+			{
+				return strtolower( trim( $string ) );
+			},
+			explode(
+				',',
+				$listString
+			)
+		);
+	}
+
+	private function importDataFromFolder( CollectionRepository $collectionRepository, string $folder ) : void
+	{
+		$this->style->section( 'Start importing from folder: ' . $folder );
+
+		try
+		{
+			$fullFilePath = $folder . DIRECTORY_SEPARATOR . 'personal.csv';
+			$file         = fopen( $fullFilePath, 'rb' );
+			$headerRow    = fgetcsv( $file, 1024, ',', '"' );
+			$dataRow      = fgetcsv( $file, 1024, ',', '"' );
+
+			$personal = array_combine( $headerRow, $dataRow );
+
+			$userData = [
+				'firstName'   => $personal['FirstName'],
+				'lastName'    => ($personal['Infix'] ? "{$personal['Infix']} " : '') . $personal['LastName'],
+				'topics'      => $this->commaSeparatedListToArray( $personal['tech topic interested comma separated'] ),
+				'conferences' => [],
+			];
+
+			fclose( $file );
+
+			$fullFilePath = $folder . DIRECTORY_SEPARATOR . 'past.csv';
+
+			$this->style->section( 'Start importing file: ' . $fullFilePath );
+
+			$file        = fopen( $fullFilePath, 'rb' );
+			$conferences = [];
+			$index       = 0;
+
+			while ( $row = fgetcsv( $file, 1024, ',', '"' ) )
+			{
+				if ( 0 === $index++ )
+				{
+					continue;
+				}
+
+				$conferences[] = strtolower( trim( $row[0] ) );
+			}
+
+			$userData['conferences'] = $conferences;
+
+			/** @var User $user */
+			$user = User::fromArray( $userData );
+
+			$collectionRepository->insertDocuments( 'users', $user );
+			$collectionRepository->insertDocuments( 'topics', ...$user->getTopics() );
+			$collectionRepository->insertDocuments( 'conferences', ...$user->getConferences() );
+			$collectionRepository->insertDocuments( 'edges', ...$user->getEdges() );
+
+			$this->style->success( '√ Data successfully added from folder ' . $folder );
+		}
+		catch ( \Throwable $e )
+		{
+			$this->style->error( $e->getMessage() );
+		}
+	}
 }
