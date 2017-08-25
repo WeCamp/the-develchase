@@ -17,6 +17,10 @@ use WeCamp\TheDevelChase\Application\Interfaces\DocumentInterface;
  */
 final class CollectionRepository
 {
+	private const COLLECTION_TYPE_DOCUMENTS = 2;
+
+	private const COLLECTION_TYPE_EDGES     = 3;
+
 	/** @var Connection */
 	private $connection;
 
@@ -29,19 +33,27 @@ final class CollectionRepository
 		$this->collectionHandler = new CollectionHandler( $connection );
 	}
 
-	public function create( string $name, array $options ) : string
+	public function createDocumentCollection( string $collectionName ) : string
+	{
+		return $this->createCollection( $collectionName, self::COLLECTION_TYPE_DOCUMENTS );
+	}
+
+	public function createEdgeCollection( string $collectionName ) : string
+	{
+		return $this->createCollection( $collectionName, self::COLLECTION_TYPE_EDGES );
+	}
+
+	private function createCollection( string $name, int $type ) : string
 	{
 		$collection = new Collection( $name );
-		$collection->setType($options['type']);
+		$collection->setType( $type );
 
-
-		// Drops an existing collection with the same name
 		if ( !$this->collectionHandler->has( $collection ) )
 		{
-            return $this->collectionHandler->create( $collection );
+			return $this->collectionHandler->create( $collection );
 		}
 
-		return $this->collectionHandler->getCollectionId($collection->getName());
+		return $this->collectionHandler->getCollectionId( $collection->getName() );
 	}
 
 	public function insertDocuments( string $collectionName, DocumentInterface ...$documents ) : void
@@ -66,6 +78,19 @@ final class CollectionRepository
 			);
 
 			$statement->execute();
+		}
+	}
+
+	public function dropCollections( string ...$collectionNames ) : void
+	{
+		foreach ( $collectionNames as $collectionName )
+		{
+			if ( !$this->collectionHandler->has( $collectionName ) )
+			{
+				continue;
+			}
+
+			$this->collectionHandler->drop( $collectionName );
 		}
 	}
 }
