@@ -35,6 +35,10 @@ const AllTopics = [{
 	name: 'Docker',
 	checked: false,
 }, {
+	id: 6,
+	name: 'JavaScript',
+	checked: true,
+}, {
 	id: 4,
 	name: 'React',
 	checked: true,
@@ -65,7 +69,10 @@ class TopicSelector extends Component {
 										defaultChecked={ topic.checked }
 										component="input"
 										type="checkbox"
-										onClick={ ()=> { self.props.apiCall( self.props.that ) }
+										onClick={ ()=> { self.props.apiCall( self.props.that );
+											topic.checked=!topic.checked;
+											console.log( topic.checked );
+										}
 										}
 									/>
 								</TopicName>

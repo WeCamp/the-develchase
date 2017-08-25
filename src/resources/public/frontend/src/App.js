@@ -75,7 +75,6 @@ class App extends Component {
 	{
 		fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`)
 		.then(function (response) {
-			console.log("response", response);
 			return response.json();
 		})
 		.then(function (parsedData) {
