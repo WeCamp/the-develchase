@@ -65,6 +65,25 @@ const Conferences = styled.div`
 
 class App extends Component {
 
+    constructor() {
+        super();
+        this.state = { items: [] };
+
+    }
+
+    componentDidMount() {
+        var self = this;
+
+        fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(parsedData) {
+                self.setState({items:parsedData});
+                console.log(self.state);
+            });
+    }
+
   render() {
 	  return (
       <div className="App">

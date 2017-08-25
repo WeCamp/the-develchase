@@ -1,12 +1,5 @@
 import React from 'react'
 import styled from "styled-components";
-import { Table } from 'antd';
-
-export const ResultsTable = styled( Table )`
-	display: flex;
-	justify-content: stretch;
-	text-align: left;
-`;
 
 const columns = [{
 	id: '1',
