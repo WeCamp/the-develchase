@@ -1,63 +1,95 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import styled from "styled-components";
+import TopicSelector from "./Topics";
+import { ConferencesResult } from "./ConferencesResult";
 
-// class App extends Component {
-//     constructor() {
-//         super();
-//         this.state = { items: [] };
-//     }
-//
-//     componentDidMount() {
-//         fetch(`https://httpbin.org/get`)
-//             .then(result => {
-//                 this.setState({items:result.json()});
-//             });
-//
-//         console.log('hello');
-//         console.log(this.state.items);
-//     }
-//
-//     render() {
-//         return (
-//             <div></div>
-//         );
-        // return(
-        //     <div>
-        //         <div>Items:</div>
-        //         { this.state.items.map(item=> { return <div>{item.name}</div>}) }
-        //     </div>
-        // );
-//     }
-// }
+const Header = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: auto;
+    margin-bottom: 0;
+    background-color: #4ABDAC;
+    height: 4em;
+    `;
 
-// export default App;
+const Title = styled.h1`
+    color: #DFDCE3;
+`;
 
+const SubTitle = styled.h2`
+    color: #FC4A1A;
+`;
 
-export default class App extends React.Component {
-    constructor() {
-        super();
-        this.state = { items: [] };
-    }
+const NavigationBar = styled.div`
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin-top: 0;
+    background-color: #FC4A1A;
+    border: 1px solid black;
+    height: 2em;
+    `;
 
-    componentDidMount() {
-        fetch(`http://echo.jsontest.com/key/value/one/two`)
-            .then(result => {
-                this.setState({items:result.json()});
-                console.log(this.state);
-            });
+const MenuItem = styled.div`
+    width: 200px;
+    // margin: auto;
+    color: white;
+    &:hover {
+        color: black;
+        }
+    `;
 
+const Content = styled.div`
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    background-color: white;
+    `;
 
-    }
+const Topics = styled.div`
+    width: 45%;
+    background-color: lightgrey;
+    margin: 2px;
+    `;
 
-    render() {
-        console.log('hello');
+const Conferences = styled.div`
+    width: 45%;
+    background-color: lightgrey;
+    margin: 2px;
+    `;
 
-        return(
-             <div>
-                 <div>Items:</div>
-                 {this.state.items.key}
-             </div>
-        );
-    }
+class App extends Component {
+
+  render() {
+	  return (
+      <div className="App">
+        <Header>
+          {/*<img src={logo} className="App-logo" alt="logo" />*/}
+          <Title>The DevelChasers</Title>
+        </Header>
+          <NavigationBar>
+              <MenuItem>Select your conferences</MenuItem>
+              <MenuItem>People to meet</MenuItem>
+          </NavigationBar>
+        <Content>
+            <Topics>
+                <SubTitle>Select your topics</SubTitle>
+                <TopicSelector />
+            </Topics>
+            <Conferences>
+                <SubTitle>We recommend visiting these conferences:</SubTitle>
+                <ConferencesResult></ConferencesResult>
+            </Conferences>
+        </Content>
+      </div>
+    );
+  }
 }
+
+export default App;
