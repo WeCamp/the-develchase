@@ -18,8 +18,6 @@ export default class App extends React.Component {
             })
             .then(function(parsedData) {
                 self.setState({items:parsedData});
-                // resolve(parsedData);
-                // console.log(parsedData);
                 console.log(self.state);
             });
     }
