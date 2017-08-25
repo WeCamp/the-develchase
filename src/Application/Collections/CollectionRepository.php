@@ -81,6 +81,38 @@ final class CollectionRepository
 		}
 	}
 
+	public function queryDocuments( array $interests ) : iterable
+	{
+		$query = 'FOR e IN edges
+			FILTER e.label == "presents"
+				&& e._to IN @interests
+			COLLECT key = e._from, conf = e._from INTO confs
+			FOR c IN conferences
+				FILTER c._id == conf
+			RETURN {
+				"key": key,
+				"conference": c.name,
+				"topics": SUBSTITUTE(confs[*].e._to, "topics/", "")
+			}';
+
+		$statement = new Statement(
+			$this->connection,
+			[
+				'query'     => $query,
+				'count'     => true,
+				'batchSize' => 1,
+				'sanatize'  => true,
+				'bindVars'  => [
+					'interests' => $interests,
+				],
+			]
+		);
+
+		$cursor = $statement->execute();
+
+		return $cursor->getAll();
+	}
+
 	public function dropCollections( string ...$collectionNames ) : void
 	{
 		foreach ( $collectionNames as $collectionName )
