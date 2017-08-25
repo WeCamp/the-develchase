@@ -52,7 +52,7 @@ class TopicSelector extends Component {
 	constructor(props) {
 		super(props);
 		// this.handleChange = this.handleChange.bind(this);
-		this.state = { value: "", topics: AllTopics };
+		this.state = { topics: AllTopics };
 		console.log("state", this.state );
 	}
 
@@ -69,7 +69,7 @@ class TopicSelector extends Component {
 										defaultChecked={ topic.checked }
 										component="input"
 										type="checkbox"
-										onClick={ ()=> { self.props.apiCall( self.props.that );
+										onClick={ () => { self.props.apiCall( self.props.that );
 											topic.checked=!topic.checked;
 											console.log( topic.checked );
 										}
@@ -80,14 +80,6 @@ class TopicSelector extends Component {
 						)
 					}
 				)}
-				<div>
-					<button type="submit">
-						Submit
-					</button>
-					<button type="button">
-						Clear Values
-					</button>
-				</div>
 			</form>
 		)
 	}

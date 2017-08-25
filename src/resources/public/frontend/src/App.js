@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
 import styled from "styled-components";
-import TopicSelector from "./Topics";
-import { ConferencesResult } from "./ConferencesResult";
+// import TopicSelector from "./Topics";
+// import { ConferencesResult } from "./ConferencesResult";
 
 const Header = styled.div`
     display: flex;
@@ -63,27 +63,119 @@ const Conferences = styled.div`
     margin: 2px;
     `;
 
+export const TopicItem = styled.div`
+	display: flex;
+	justify-content: center;
+	padding: 10px;
+	height: 2em;
+	&:hover {
+		background-color: grey;
+	}
+`;
+
+export const TopicName = styled.label`
+	display: flex;
+	justify-content: space-between;
+	margin: auto 0;
+	width: 200px;
+`;
+
+export const TopicCheckbox = styled.input`
+	margin-right: 0 0 auto;
+`;
+
+const AllTopics = [{
+	id: 1,
+	name: 'Angular',
+	checked: true,
+}, {
+	id: 2,
+	name: 'PHP',
+	checked: false,
+}, {
+	id: 3,
+	name: 'Docker',
+	checked: false,
+}, {
+	id: 6,
+	name: 'JavaScript',
+	checked: false,
+}, {
+	id: 4,
+	name: 'React',
+	checked: false,
+}, {
+	id: 5,
+	name: 'Something else',
+	checked: false,
+}];
+
+const columns = [{
+	id: '1',
+	title: 'Name',
+	dataIndex: 'name',
+}, {
+	id: '2',
+	title: 'Description',
+	className: 'description',
+	dataIndex: 'description',
+}, {
+	id: '3',
+	title: 'Location',
+	dataIndex: 'location',
+}, {
+	id: '4',
+	title: 'Buy ticket',
+	dataIndex: 'url',
+}];
+
+const conferences = [{
+	id: '1',
+	name: 'WeCamp',
+	location: 'De Kluut',
+	url: 'http://www.wecamp.com',
+}, {
+	id: '2',
+	name: 'PHPBenelux',
+	location: 'Amsterdam',
+	url: 'http://www.phpbenelux.com',
+}, {
+	id: '3',
+	name: 'WeCamp',
+	location: 'Some Island',
+	url: 'http://www.wecamp.com',
+}];
+
 class App extends Component {
 
     constructor() {
         super();
-        this.state = { items: [] };
-		console.log("state", this.setState);
+		this.state = { conferences: [], topics: AllTopics };
 	}
 
 	apiCall( input )
-	{
-		fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`)
+	{	var topicArray = [];
+		this.state.topics.forEach( ( topic ) => {
+			console.log( topic );
+		if( topic.checked === true ) { topicArray.push( topic.name ); }
+		console.log( "TopicArray", topicArray );
+	} )
+		fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`, {
+			method: "POST",
+			body: { interests: topicArray },
+		})
 		.then(function (response) {
 			return response.json();
 		})
 		.then(function (parsedData) {
-			input.setState({items: parsedData});
+			input.setState({conferences: parsedData});
 			console.log( "setState", input.state );
 		})
 	}
 
   render() {
+	  console.log("state", this.state);
+
 	  var that = this;
 
 	  return (
@@ -99,11 +191,52 @@ class App extends Component {
         <Content>
             <Topics>
                 <SubTitle>Select your topics</SubTitle>
-                <TopicSelector apiCall={ this.apiCall } that={ that }/>
-            </Topics>
+					<form onSubmit={this.handleSubmit}>
+						{ this.state.topics.map( function( topic ) {
+								return (
+									<TopicItem key={ topic.id }>
+										<TopicName>{ topic.name }
+											<TopicCheckbox
+												name={ topic.name }
+												defaultChecked={ topic.checked }
+												component="input"
+												type="checkbox"
+												onClick={ () => { topic.checked=!topic.checked;
+													console.log( topic.checked );
+													that.apiCall( that );
+												}
+												}
+											/>
+										</TopicName>
+									</TopicItem>
+								)
+							}
+						)}
+					</form>
+			</Topics>
             <Conferences>
                 <SubTitle>We recommend visiting these conferences:</SubTitle>
-                <ConferencesResult></ConferencesResult>
+				<table>
+					<tbody>
+					<tr>
+						{ columns.map( function( column ) {
+								return (
+									<td key={ column.id }><strong>{ column.title }</strong></td>
+								)
+							}
+						)}
+					</tr>
+					{ conferences.map( function( conference ){
+						return (
+							<tr key={ conference.id }>
+								<td>{ conference.name }</td>
+								<td>{ conference.location }</td>
+								<td><a href={ conference.url }>Order now</a></td>
+							</tr>
+						)
+					})}
+					</tbody>
+				</table>
             </Conferences>
         </Content>
       </div>
