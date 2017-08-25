@@ -71,7 +71,6 @@ class TopicSelector extends Component {
 										id={ topic.name }
 										component="input"
 										type="checkbox"
-										onChange={ handleChange }
 										onClick={ ()=>{console.log("Checked")}}
 									/>
 								</TopicName>
