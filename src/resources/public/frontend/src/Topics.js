@@ -23,55 +23,62 @@ export const TopicCheckbox = styled.input`
 `;
 
 const AllTopics = [{
-	key: '1',
+	id: 1,
 	name: 'Angular',
-	description: 'Totally awesome',
-	location: 'De Kluut, The Netherlands',
-	url: 'http://www.wecamp.com',
+	checked: true,
 }, {
-	key: '2',
+	id: 2,
 	name: 'PHP',
+	checked: false,
 }, {
-	key: '3',
+	id: 3,
 	name: 'Docker',
+	checked: false,
 }, {
-	key: '4',
+	id: 4,
 	name: 'React',
+	checked: true,
 }, {
-	key: '5',
+	id: 5,
 	name: 'Something else',
+	checked: false,
 }];
 
 class TopicSelector extends Component {
 	constructor(props) {
 		super(props);
-		this.state = {topics: AllTopics};
+		// this.handleChange = this.handleChange.bind(this);
+		this.state = { value: "", topics: AllTopics };
 		console.log("state", this.state );
 	}
 
-	handleSubmit(event) {
-		console.log("state", this.state );
-		event.preventDefault();
-	}
-
-	handleChange(event) {
-		// this.setState({value: event.target.value});
-		console.log("state", this.state );
-	}
+	// handleSubmit(event) {
+	// 	console.log("state", this.state );
+	// 	event.preventDefault();
+	// }
+	// handleChange(event) {
+	// 	console.log( "handlechange", event );
+	// 	this.setState({value: event.target.value});
+	// }
+	componentDidUpdate(prevProps, prevState) {
+	console.log("state after change", this.state );
+}
 
 	render(){
 		return (
 			<form onSubmit={this.handleSubmit}>
 				{ this.state.topics.map( function( topic ) {
-						return (
-							<TopicItem>
+					return (
+							<TopicItem key={ topic.id }>
 								<TopicName>{ topic.name }
 									<TopicCheckbox
 										name={ topic.name }
-										id={ topic.name }
+										defaultChecked={ topic.checked }
 										component="input"
 										type="checkbox"
-										onClick={ ()=>{console.log("Checked")}}
+										onClick={ ()=> {  topic.checked = !topic.checked;
+											console.log( "checked?", topic.checked );
+										} }
 									/>
 								</TopicName>
 							</TopicItem>
