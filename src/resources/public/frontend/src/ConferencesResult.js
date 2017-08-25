@@ -23,19 +23,16 @@ const columns = [{
 const conferences = [{
 	id: '1',
 	name: 'WeCamp',
-	description: 'Awesome',
 	location: 'De Kluut',
 	url: 'http://www.wecamp.com',
 }, {
 	id: '2',
 	name: 'PHPBenelux',
-	description: 'Just give it a try',
 	location: 'Amsterdam',
 	url: 'http://www.phpbenelux.com',
 }, {
 	id: '3',
 	name: 'WeCamp',
-	description: 'Still awesome',
 	location: 'Some Island',
 	url: 'http://www.wecamp.com',
 }];
@@ -56,7 +53,6 @@ export function ConferencesResult() {
 					return (
 						<tr key={ conference.id }>
 							<td>{ conference.name }</td>
-							<td>{ conference.description }</td>
 							<td>{ conference.location }</td>
 							<td><a href={ conference.url }>Order now</a></td>
 						</tr>

@@ -68,23 +68,25 @@ class App extends Component {
     constructor() {
         super();
         this.state = { items: [] };
+		console.log("state", this.setState);
+	}
 
-    }
-
-    componentDidMount() {
-        var self = this;
-
-        fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(parsedData) {
-                self.setState({items:parsedData});
-                console.log(self.state);
-            });
-    }
+	apiCall( input )
+	{
+		fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`)
+		.then(function (response) {
+			console.log("response", response);
+			return response.json();
+		})
+		.then(function (parsedData) {
+			input.setState({items: parsedData});
+			console.log( "setState", input.state );
+		})
+	}
 
   render() {
+	  var that = this;
+
 	  return (
       <div className="App">
         <Header>
@@ -98,7 +100,7 @@ class App extends Component {
         <Content>
             <Topics>
                 <SubTitle>Select your topics</SubTitle>
-                <TopicSelector />
+                <TopicSelector apiCall={ this.apiCall } that={ that }/>
             </Topics>
             <Conferences>
                 <SubTitle>We recommend visiting these conferences:</SubTitle>

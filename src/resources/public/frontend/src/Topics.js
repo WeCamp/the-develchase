@@ -52,19 +52,8 @@ class TopicSelector extends Component {
 		console.log("state", this.state );
 	}
 
-	// handleSubmit(event) {
-	// 	console.log("state", this.state );
-	// 	event.preventDefault();
-	// }
-	// handleChange(event) {
-	// 	console.log( "handlechange", event );
-	// 	this.setState({value: event.target.value});
-	// }
-	componentDidUpdate(prevProps, prevState) {
-	console.log("state after change", this.state );
-}
-
 	render(){
+		var self = this;
 		return (
 			<form onSubmit={this.handleSubmit}>
 				{ this.state.topics.map( function( topic ) {
@@ -76,9 +65,8 @@ class TopicSelector extends Component {
 										defaultChecked={ topic.checked }
 										component="input"
 										type="checkbox"
-										onClick={ ()=> {  topic.checked = !topic.checked;
-											console.log( "checked?", topic.checked );
-										} }
+										onClick={ ()=> { self.props.apiCall( self.props.that ) }
+										}
 									/>
 								</TopicName>
 							</TopicItem>
