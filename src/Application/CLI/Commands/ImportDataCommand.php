@@ -125,8 +125,8 @@ final class ImportDataCommand extends AbstractCommand
 		{
 			$fullFilePath = $folder . DIRECTORY_SEPARATOR . 'personal.csv';
 			$file         = fopen( $fullFilePath, 'rb' );
-			$headerRow    = fgetcsv( $file, 1024, ',', '"' );
-			$dataRow      = fgetcsv( $file, 1024, ',', '"' );
+			$headerRow    = fgetcsv( $file, 1024 );
+			$dataRow      = fgetcsv( $file, 1024 );
 
 			$personal = array_combine( $headerRow, $dataRow );
 
@@ -151,7 +151,7 @@ final class ImportDataCommand extends AbstractCommand
 			$conferences = [];
 			$index       = 0;
 
-			while ( $row = fgetcsv( $file, 1024, ',', '"' ) )
+			while ( $row = fgetcsv( $file, 1024 ) )
 			{
 				if ( 0 === $index++ )
 				{

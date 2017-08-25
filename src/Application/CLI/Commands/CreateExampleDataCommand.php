@@ -33,25 +33,7 @@ final class CreateExampleDataCommand extends AbstractCommand
 		$testData = require __DIR__ . '/../../../resources/ExampleData.php';
 
 		$collectionRepository = new CollectionRepository( $this->getEnv()->getArangoConnection() );
-		$collections = [
-		    [
-                'name' => 'users',
-                'options' => ['type' => 2]
-            ],
-            [
-                'name' => 'topics',
-                'options' => ['type' => 2]
-            ],
-            [
-                'name' => 'conferences',
-                'options' => ['type' => 2]
-            ],
-            [
-                'name' => 'edges',
-                'options' => ['type' => 3]
-            ],
-        ];
-		$this->createCollections( $collectionRepository, $collections );
+		$this->createCollections( $collectionRepository, 'users', 'topics', 'conferences' );
 
 		foreach ( (array)$testData['users'] as $userData )
 		{
@@ -61,21 +43,20 @@ final class CreateExampleDataCommand extends AbstractCommand
 			$collectionRepository->insertDocuments( 'users', $user );
 			$collectionRepository->insertDocuments( 'topics', ...$user->getTopics() );
 			$collectionRepository->insertDocuments( 'conferences', ...$user->getConferences() );
-			$collectionRepository->insertDocuments( 'edges', ...$user->getEdges() );
-        }
+		}
 
 		$this->style->success( '√ Data successfully added.' );
 
 		return 0;
 	}
 
-	private function createCollections( CollectionRepository $collectionRepository, array $collections ) : void
+	private function createCollections( CollectionRepository $collectionRepository, string ...$collectionNames ) : void
 	{
-		foreach ( $collections as $collection )
+		foreach ( $collectionNames as $collectionName )
 		{
-			$this->style->section( 'Creating collection ' . $collection['name'] );
+			$this->style->section( 'Creating collection ' . $collectionName );
 
-			$collectionId = $collectionRepository->create( $collection['name'], $collection['options'] );
+			$collectionId = $collectionRepository->createDocumentCollection( $collectionName );
 
 			$this->style->writeln( '<fg=green>√ CollectionRepository-ID: ' . $collectionId . '</>' );
 		}

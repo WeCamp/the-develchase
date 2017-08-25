@@ -19,7 +19,7 @@ final class DropDataCommand extends AbstractCommand
 {
 	private $style;
 
-	protected function configure()
+	protected function configure() : void
 	{
 		$this->setDescription( 'Drops collections from the graph database.' );
 		$this->addArgument(
