@@ -51,7 +51,7 @@ final class ImportDataCommand extends AbstractCommand
 
 		$collectionRepository = new CollectionRepository( $this->getEnv()->getArangoConnection() );
 
-		$this->createDocumentCollections( $collectionRepository, 'users', 'topics', 'conferences' );
+		$this->createDocumentCollections( $collectionRepository, 'users', 'topics', 'conferences', 'locations' );
 		$this->createEdgeCollections( $collectionRepository, 'edges' );
 
 		$directory = new \DirectoryIterator( $baseDirectory );
@@ -103,7 +103,7 @@ final class ImportDataCommand extends AbstractCommand
 
 	private function commaSeparatedListToArray( string $listString ) : array
 	{
-		return array_map(
+		$list = array_map(
 			function ( $string )
 			{
 				return strtolower( trim( $string ) );
@@ -113,6 +113,8 @@ final class ImportDataCommand extends AbstractCommand
 				$listString
 			)
 		);
+
+		return array_filter( $list );
 	}
 
 	private function importDataFromFolder( CollectionRepository $collectionRepository, string $folder ) : void
@@ -129,10 +131,14 @@ final class ImportDataCommand extends AbstractCommand
 			$personal = array_combine( $headerRow, $dataRow );
 
 			$userData = [
-				'firstName'   => $personal['FirstName'],
-				'lastName'    => ($personal['Infix'] ? "{$personal['Infix']} " : '') . $personal['LastName'],
-				'topics'      => $this->commaSeparatedListToArray( $personal['tech topic interested comma separated'] ),
-				'conferences' => [],
+				'firstName'      => $personal['FirstName'],
+				'lastName'       => ($personal['Infix'] ? "{$personal['Infix']} " : '') . $personal['LastName'],
+				'livingLocation' => $personal['home town'],
+				'workLocation'   => $personal['work location'],
+				'topics'         => $this->commaSeparatedListToArray(
+					$personal['tech topic interested comma separated']
+				),
+				'conferences'    => [],
 			];
 
 			fclose( $file );
@@ -152,7 +158,11 @@ final class ImportDataCommand extends AbstractCommand
 					continue;
 				}
 
-				$conferences[] = strtolower( trim( $row[0] ) );
+				$conferences[] = [
+					'name'     => strtolower( trim( $row[0] ) ),
+					'location' => strtolower( trim( $row[1] ) ),
+					'topics'   => $this->commaSeparatedListToArray( $row[2] ),
+				];
 			}
 
 			$userData['conferences'] = $conferences;
@@ -163,6 +173,7 @@ final class ImportDataCommand extends AbstractCommand
 			$collectionRepository->insertDocuments( 'users', $user );
 			$collectionRepository->insertDocuments( 'topics', ...$user->getTopics() );
 			$collectionRepository->insertDocuments( 'conferences', ...$user->getConferences() );
+			$collectionRepository->insertDocuments( 'locations', ...$user->getAllLocations() );
 			$collectionRepository->insertDocuments( 'edges', ...$user->getEdges() );
 
 			$this->style->success( '√ Data successfully added from folder ' . $folder );
