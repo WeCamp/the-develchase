@@ -245,7 +245,7 @@ class App extends Component {
 						)}
 					</tr>
 					{ console.log( "Conferences", this.state.conferences ) }
-					{ conferences.map( function( conference ){
+					{ this.state.conferences.map( function( conference ){
 						return (
 							<tr key={ conference.id }>
 								<td>{ conference.name }</td>
