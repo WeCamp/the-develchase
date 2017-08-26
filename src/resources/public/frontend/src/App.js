@@ -175,9 +175,12 @@ class App extends Component {
 		if( topic.checked === true ) { topicArray.push( topic.name ); }
 		console.log( "TopicArray", topicArray );
 	} )
-		fetch(`http://echo.jsontest.com/fruit/banana/apple/tree`, {
-			method: "POST",
-			body: { interests: topicArray },
+		fetch('http://thedevelchase.com:8080/api.php?interests[]=' + topicArray.join( '&interests[]=' ), {
+		// console.log()
+			// body: { interests: topicArray },
+			// headers: new Headers( {
+			// 	'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+			// })
 		})
 		.then(function (response) {
 			return response.json();

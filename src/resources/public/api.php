@@ -11,7 +11,7 @@ $env = new Env();
 
 $collectionRepository = new CollectionRepository( $env->getArangoConnection() );
 
-$results = $collectionRepository->queryDocuments( $_POST['interests'] );
+$results = $collectionRepository->queryDocuments( $_GET['interests'] );
 
 $json = '[';
 
@@ -27,5 +27,6 @@ $json .= implode( ",\n", $jsonDocuments );
 $json .= ']';
 
 header( 'Content-Type: application/json; charset=utf-8', true, 200 );
+header( 'Access-Control-Allow-Origin: no-cors');
 echo $json;
 flush();
