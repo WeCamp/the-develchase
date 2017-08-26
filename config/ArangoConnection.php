@@ -7,7 +7,7 @@ return [
 	// database name
 	\triagens\ArangoDb\ConnectionOptions::OPTION_DATABASE      => '_system',
 	// server endpoint to connect to
-	\triagens\ArangoDb\ConnectionOptions::OPTION_ENDPOINT      => 'tcp://127.0.0.1:8529',
+	\triagens\ArangoDb\ConnectionOptions::OPTION_ENDPOINT      => 'tcp://arangodb:8529',
 	// authorization type to use (currently supported: 'Basic')
 	\triagens\ArangoDb\ConnectionOptions::OPTION_AUTH_TYPE     => 'Basic',
 	// user for basic authorization
