@@ -27,6 +27,6 @@ $json .= implode( ",\n", $jsonDocuments );
 $json .= ']';
 
 header( 'Content-Type: application/json; charset=utf-8', true, 200 );
-header( 'Access-Control-Allow-Origin: no-cors');
+header( 'Access-Control-Allow-Origin: http://localhost:3000' );
 echo $json;
 flush();

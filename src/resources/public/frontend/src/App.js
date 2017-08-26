@@ -197,67 +197,101 @@ class App extends Component {
 	  var that = this;
 
 	  return (
-      <div className="App">
+          < div;
+      className = "App" >
         <Header>
           {/*<img src={logo} className="App-logo" alt="logo" />*/}
-          <Title>The DevelChasers</Title>
+          < Title > The;
+      DevelChasers < /Title>
         </Header>
           <NavigationBar>
-              <MenuItem>Select your conferences</MenuItem>
-              <MenuItem>People to meet</MenuItem>
+      < MenuItem > Select;
+      your;
+      conferences < /MenuItem>
+      < MenuItem > People;
+      to;
+      meet < /MenuItem>
           </NavigationBar>
         <Content>
             <Topics>
-                <SubTitle>Select your topics</SubTitle>
-					<form onSubmit={this.handleSubmit}>
+      < SubTitle > Select;
+      your;
+      topics < /SubTitle>
+      < form;
+      onSubmit = {this.handleSubmit
+  }>
 						{ this.state.topics.map( function( topic ) {
 								return (
-									<TopicItem key={ topic.id }>
+                                    < TopicItem;
+                                key = {topic.id
+                            }>
 										<TopicName>{ topic.label }
-											<TopicCheckbox
+                            <
+                                TopicCheckbox;
 												name={ topic.name }
 												defaultChecked={ topic.checked }
-												component="input"
-												type="checkbox"
-												onClick={ () => { topic.checked=!topic.checked;
+                                component = "input";
+                                type = "checkbox";
+                                onClick = {() =;
+                            >
+                                {
+                                    topic.checked = !topic.checked;
 													console.log( topic.checked );
 													that.apiCall( that );
 												}
 												}
 											/>
 										</TopicName>
-									</TopicItem>
+                                            < /TopicItem>;
 								)
 							}
 						)}
 					</form>
 			</Topics>
             <Conferences>
-                <SubTitle>We recommend visiting these conferences:</SubTitle>
-				<table width="100%">
+      < SubTitle > We;
+      recommend;
+      visiting;
+      these;
+      conferences:<
+      /SubTitle>
+      < table;
+      width = "100%" >
 					<tbody>
 					<tr>
 						{ columns.map( function( column ) {
 								return (
-									<td key={ column.id }><strong>{ column.title }</strong></td>
+                                    < td;
+                                key = {column.id
+                            }><
+                                strong > {column.title
+                            }<
+                                /strong></;
+                                td >;
 								)
 							}
 						)}
-					</tr>
+  <
+      /tr>;
 					{ console.log( "Conferences", this.state.conferences ) }
 					{ this.state.conferences.map( function( conference ){
 						return (
-							<tr key={ conference.id }>
-								<td>{ conference.name }</td>
-							</tr>
+                            < tr;
+                        key = {conference.key
+                    }>
+                    <
+                        td > {conference.conference
+                    }<
+                        /td>
+                        < /tr>;
 						)
 					})}
 					</tbody>
 				</table>
             </Conferences>
         </Content>
-      </div>
-    );
+      < /div>;
+  )
   }
 }
 
