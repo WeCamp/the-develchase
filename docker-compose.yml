@@ -1,13 +1,15 @@
 version: '2'
 
 services:
-  nginx-proxy:
-    container_name: proxy
-    image: jwilder/nginx-proxy
-    ports:
-      - "8000:80"
+  php:
+    container_name: php-fpm
+    image: php:7.1-fpm
+    ports: [ "9000:9000" ]
     volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./:/usr/share/nginx/html
+    links:
+      - arangodb
+
 
   arangodb:
     container_name: arangodb
@@ -22,12 +24,13 @@ services:
     image: nginx
     volumes:
       - ./vendor:/opt/webapp/vendor
-      - ./src/resources/public:/usr/share/nginx/html
-    ports:
-      - "8080:80"
+      - ./:/usr/share/nginx/html
+      - ./docker/nginx/vhost.conf:/etc/nginx/conf.d/thedevelchase.com.conf
+    ports: [ "8080:80" ]
     restart: on-failure:10
     environment:
       - VIRTUAL_HOST=thedevelchase.com
     links:
       - arangodb
+      - php
 
