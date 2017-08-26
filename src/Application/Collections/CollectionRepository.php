@@ -83,6 +83,14 @@ final class CollectionRepository
 
 	public function queryDocuments( array $interests ) : iterable
 	{
+		$interests = array_map(
+			function ( string $topic )
+			{
+				return 'topics/' . $topic;
+			},
+			$interests
+		);
+
 		$query = 'FOR e IN edges
 			FILTER e.label == "presents"
 				&& e._to IN @interests

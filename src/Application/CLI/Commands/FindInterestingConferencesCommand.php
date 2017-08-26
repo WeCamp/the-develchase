@@ -41,14 +41,6 @@ final class FindInterestingConferencesCommand extends AbstractCommand
 		$this->style->writeln( 'Searching conferences for interests:' );
 		$this->style->listing( $interests );
 
-		$interests = array_map(
-			function ( string $topic )
-			{
-				return 'topics/' . $topic;
-			},
-			$interests
-		);
-
 		$results = $collectionRepository->queryDocuments( $interests );
 
 		$tableRows = [];
